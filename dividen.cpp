@@ -55,15 +55,16 @@ public:
 
         auto acc_plyer = accounts.find(player);
         auto acc_invite = accounts.find(invite);
+
         if (acc_plyer == accounts.end()) {
             accounts.emplace(_self, [&](auto &account) {
-//                acc_plyer->total_plat += bet;
+                account.total_plat=bet;
             });
         } else {
-            
+            accounts.modify(acc_plyer, _self, [&](auto &g) {
+                g.balance =bet;
+            });
         }
-
-
     }
 
     // @abi action
@@ -97,8 +98,6 @@ public:
                 g.balance += staked;
             });
         }
-
-        eosio::print("123", "\n");
 
         action(
                 permission_level{from, N(active)},
@@ -328,4 +327,4 @@ private:
     }
 
 EOSIO_ABI_EX(dividen,
-             (initcontract)(reset)(stake)(unstake)(claim)(transfer))
+             (initcontract)(reset)(dobet)(stake)(unstake)(claim)(transfer))
