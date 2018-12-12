@@ -26,20 +26,17 @@ using eosio::time_point_sec;
 using eosio::transaction;
 using eosio::unpack_action_data;
 
-class dividen : public eosio::contract
-{
-  public:
+class dividen : public eosio::contract {
+public:
     const uint64_t MAIN_ID = 1;
 
     dividen(account_name self) : eosio::contract(self),
                                  globalvars(_self, _self),
-                                 accounts(_self, _self)
-    {
+                                 accounts(_self, _self) {
     }
 
     // @abi action
-    void initcontract()
-    {
+    void initcontract() {
         require_auth(_self);
         auto globalvars_itr = globalvars.begin();
         eosio_assert(globalvars_itr == globalvars.end(), "Contract is init");
@@ -53,12 +50,24 @@ class dividen : public eosio::contract
     }
 
     //@abi action
-    void hi()
-    {
+    void dobet(account_name player, account_name invite, asset bet) {
+        require_auth(player);
+
+        auto acc_plyer = accounts.find(player);
+        auto acc_invite = accounts.find(invite);
+        if (acc_plyer == accounts.end()) {
+            accounts.emplace(_self, [&](auto &account) {
+//                acc_plyer->total_plat += bet;
+            });
+        } else {
+            
+        }
+
+
     }
+
     // @abi action
-    void stake(account_name from, asset staked)
-    {
+    void stake(account_name from, asset staked) {
         require_auth(from);
 
         eosio_assert(staked.is_valid(), "invalid quantity");
@@ -78,39 +87,35 @@ class dividen : public eosio::contract
         });
         auto account = accounts.find(from);
         // eosio::print("account:", account, "n");
-        if (account == accounts.end())
-        {
+        if (account == accounts.end()) {
             accounts.emplace(_self, [&](auto &account) {
                 account.to = from;
                 account.balance = staked;
             });
-        }
-        else
-        {
+        } else {
             accounts.modify(account, _self, [&](auto &g) {
                 g.balance += staked;
             });
         }
 
-        eosio::print("123","\n");
+        eosio::print("123", "\n");
 
-		action(
-            permission_level{from, N(active)},
-            N(eosio.token),
-            N(transfer),
-            std::make_tuple(
-                from,
-				_self,
-                staked,
-                //asset(0.0001, symbol_type(S(4, EOS))),
-                std::string("ggggg")))
-            .send();
+        action(
+                permission_level{from, N(active)},
+                N(eosio.token),
+                N(transfer),
+                std::make_tuple(
+                        from,
+                        _self,
+                        staked,
+                        //asset(0.0001, symbol_type(S(4, EOS))),
+                        std::string("ggggg")))
+                .send();
 
     }
 
     // @abi action
-    void unstake(account_name from, asset staked)
-    {
+    void unstake(account_name from, asset staked) {
         require_auth(from);
 
         eosio_assert(staked.is_valid(), "invalid quantity");
@@ -120,7 +125,8 @@ class dividen : public eosio::contract
 
         auto globalvars_itr = globalvars.find(MAIN_ID);
 
-        eosio_assert(globalvars_itr->total_staked.amount > staked.amount, "total staked must greater unstaked quantity");
+        eosio_assert(globalvars_itr->total_staked.amount > staked.amount,
+                     "total staked must greater unstaked quantity");
 
         globalvars.modify(globalvars_itr, _self, [&](auto &g) {
             g.total_staked -= staked;
@@ -133,158 +139,151 @@ class dividen : public eosio::contract
             g.balance -= staked;
         });
 
-		action(
-            permission_level{_self, N(active)},
-            N(eosio.token),
-            N(transfer),
-            std::make_tuple(
-                _self ,
-				from,
-                staked,
-                std::string("ggggg")))
-            .send();
+        action(
+                permission_level{_self, N(active)},
+                N(eosio.token),
+                N(transfer),
+                std::make_tuple(
+                        _self,
+                        from,
+                        staked,
+                        std::string("ggggg")))
+                .send();
 
     }
 
     // @abi action
-    void claim(account_name from)
-    {
+    void claim(account_name from) {
         require_auth(from);
 
         auto account = accounts.find(from);
         eosio_assert(account != accounts.end(), "account not exists!");
 
-		auto globalvars_itr = globalvars.find(MAIN_ID);
+        auto globalvars_itr = globalvars.find(MAIN_ID);
 
         eosio::print("total_staked:", globalvars_itr->total_staked.amount, "\n");
 
-		//asset temp = account->balance.amount/globalvars_itr->total_staked.amount ;
-		auto temp = account->balance/globalvars_itr->total_staked ;
+        //asset temp = account->balance.amount/globalvars_itr->total_staked.amount ;
+        auto temp = account->balance / globalvars_itr->total_staked;
 
-		uint64_t b= account->balance.amount;
+        uint64_t b = account->balance.amount;
 
-		uint64_t t= globalvars_itr->total_staked.amount;
+        uint64_t t = globalvars_itr->total_staked.amount;
 
-		uint64_t g=globalvars_itr->eos_pool.amount;
+        uint64_t g = globalvars_itr->eos_pool.amount;
 
-		eosio::print("total_staked:", globalvars_itr->total_staked.amount, "n");
+        eosio::print("total_staked:", globalvars_itr->total_staked.amount, "n");
 
-        double amount = g*b/t *10000;
-		eosio::print("amount:", amount, "n");
+        double amount = g * b / t * 10000;
 
-        if(amount==0){
+        eosio::print("amount:", amount, "n");
+
+        if (amount == 0) {
             return;
         }
 
 
-        asset t_eos= asset(amount, symbol_type(S(4, EOS)));
+        asset t_eos = asset(amount, symbol_type(S(4, EOS)));
         globalvars.modify(globalvars_itr, _self, [&](auto &g) {
-				g.eos_pool -= t_eos;
-				//g.earnings_per_share = g.eos_pool / (g.total_staked - delta);
+            g.eos_pool -= t_eos;
+            //g.earnings_per_share = g.eos_pool / (g.total_staked - delta);
         });
 
         action(
-            permission_level{_self, N(active)},
-            N(eosio.token),
-            N(transfer),
-            std::make_tuple(
-                _self,
-                from,
-                t,
-                std::string("ggggg")))
-            .send();
+                permission_level{_self, N(active)},
+                N(eosio.token),
+                N(transfer),
+                std::make_tuple(
+                        _self,
+                        from,
+                        t,
+                        std::string("ggggg")))
+                .send();
     }
 
-	 inline void profit(asset quantity)
-    {
+    inline void profit(asset quantity) {
         auto globalvars_itr = globalvars.find(MAIN_ID);
 
-		if (globalvars_itr == globalvars.end()){
+        if (globalvars_itr == globalvars.end()) {
             initcontract();
-		}else{
-			 globalvars.modify(globalvars_itr, _self, [&](auto &g) {
-				g.eos_pool += quantity;
-				//g.earnings_per_share = g.eos_pool / (g.total_staked - delta);
-        });
-		}
-	}
+        } else {
+            globalvars.modify(globalvars_itr, _self, [&](auto &g) {
+                g.eos_pool += quantity;
+                //g.earnings_per_share = g.eos_pool / (g.total_staked - delta);
+            });
+        }
+    }
 
     //监听
-    void transfer(uint64_t sender, uint64_t receiver)
-    {
+    void transfer(uint64_t sender, uint64_t receiver) {
         auto transfer_data = unpack_action_data<st_transfer>();
 
-        if (transfer_data.from == _self)
-        {
+        if (transfer_data.from == _self) {
             return;
         }
         //
-		std::string mem_str = transfer_data.memo;
-		asset quantity = transfer_data.quantity;
-		
+        std::string mem_str = transfer_data.memo;
+        asset quantity = transfer_data.quantity;
+
         eosio_assert(quantity.is_valid(), "Invalid asset");
 
-		eosio_assert( quantity.amount > 0, "must transfer positive quantity" );
-		
-        if (quantity.symbol.name() != eosio::symbol_type(EOS_SYMBOL).name())
-        {
-        return;
+        eosio_assert(quantity.amount > 0, "must transfer positive quantity");
+
+        if (quantity.symbol.name() != eosio::symbol_type(EOS_SYMBOL).name()) {
+            return;
         }
-		eosio_assert( quantity.symbol.name() == eosio::symbol_type(EOS_SYMBOL).name(), "EOS symbol precision mismatch" );
-		eosio_assert( mem_str.size() <= 256, "memo has more than 256 bytes" );
+        eosio_assert(quantity.symbol.name() == eosio::symbol_type(EOS_SYMBOL).name(), "EOS symbol precision mismatch");
+        eosio_assert(mem_str.size() <= 256, "memo has more than 256 bytes");
 
-		eosio::print("mem_str:", mem_str, "n");
-      
-		//auto params = split(mem_str, ' ');
-		//eosio_assert(params.size() >= 1, "error memo");    
+        eosio::print("mem_str:", mem_str, "n");
 
-		if (mem_str == "make_profit") {
-			//eosio_assert(quantity.contract == N(eosio.token), "must use true EOS to make profit");
-			eosio_assert(quantity.symbol == EOS_SYMBOL, "must use EOS to make profit");
-			// make_profit(quantity.quantity.amount);
+        //auto params = split(mem_str, ' ');
+        //eosio_assert(params.size() >= 1, "error memo");
 
-			profit(quantity);
+        if (mem_str == "make_profit") {
+            //eosio_assert(quantity.contract == N(eosio.token), "must use true EOS to make profit");
+            eosio_assert(quantity.symbol == EOS_SYMBOL, "must use EOS to make profit");
+            // make_profit(quantity.quantity.amount);
+
+            profit(quantity);
 
 
-        return;
+            return;
         }
 
-	}
+    }
 
     // @abi action
-    void reset()
-    {
+    void reset() {
         require_auth(_self);
         auto cur_acc_itr = accounts.begin();
-        while (cur_acc_itr != accounts.end())
-        {
+        while (cur_acc_itr != accounts.end()) {
             cur_acc_itr = accounts.erase(cur_acc_itr);
         }
         auto cur_gvar_itr = globalvars.begin();
-        while (cur_gvar_itr != globalvars.end())
-        {
+        while (cur_gvar_itr != globalvars.end()) {
             cur_gvar_itr = globalvars.erase(cur_gvar_itr);
         }
     }
 
-  private:
+private:
     // @abi table globalvars i64
-    struct globalvar
-    {
+    struct globalvar {
         uint64_t id;
         asset total_staked; //总抵押
         asset eos_pool;     //奖金池eos
 
         uint64_t primary_key() const { return id; }
 
-        EOSLIB_SERIALIZE(globalvar, (id)(total_staked)(eos_pool));
+        EOSLIB_SERIALIZE(globalvar, (id)(total_staked)(eos_pool)
+        );
     };
 
     typedef eosio::multi_index<N(globalvars), globalvar> globalvars_index;
 
     // @abi table accountlist i64
-    struct account
-    {
+    struct account {
+        asset total_plat;    //个人平台总代币
         asset balance;   //个人抵押
         account_name to; //用户
         //uint64_t primary_key() const { return balance.symbol.name(); }
@@ -294,8 +293,7 @@ class dividen : public eosio::contract
     typedef eosio::multi_index<N(accountlist), account> accountlist;
 
     // taken from eosio.token.hpp
-    struct st_transfer
-    {
+    struct st_transfer {
         account_name from; //
         account_name to;
         asset quantity;
