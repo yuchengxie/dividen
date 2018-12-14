@@ -390,11 +390,11 @@ class dividen : public eosio::contract
         void apply(uint64_t receiver, uint64_t code, uint64_t action)                  \
         {                                                                              \
             auto self = receiver;                                                      \
-            if (code == self || code == N(eosio.token))                                \
+            if (code == self || code == N(mtoken))                                \
             {                                                                          \
                 if (action == N(transfer))                                             \
                 {                                                                      \
-                    eosio_assert(code == N(eosio.token), "Must transfer EOS");         \
+                    eosio_assert(code == N(mtoken), "Must transfer EOS");         \
                 }                                                                      \
                 TYPE thiscontract(self);                                               \
                 switch (action)                                                        \
