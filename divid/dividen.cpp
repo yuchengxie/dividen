@@ -9,6 +9,8 @@
 #include <eosiolib/transaction.hpp>
 #include <eosiolib/crypto.h>
 #include <boost/algorithm/string.hpp>
+#include <math.h>
+#include "eosio.token.hpp"
 
 // #define EOS_SYMBOL symbol("EOS", 4)
 
@@ -53,9 +55,47 @@ class dividen : public eosio::contract
     }
 
     //@abi action
-    void hi()
+    void dobet(account_name player, account_name invite, asset bet)
     {
+        require_auth(_self);
+
+        eosio_assert(bet.is_valid(), "invalid quantity");
+        eosio_assert(bet.amount > 0, "must transfer positive quantity");
+
+        eosio_assert(bet.symbol.name() == eosio::symbol_type(EOS_SYMBOL).name(), "symbol precision mismatch");
+        asset player_plat = asset(10 * bet.amount, MIXER_SYMBOL);
+        asset invite_plat = asset(0.1 * bet.amount, MIXER_SYMBOL);
+        print("bet.amount:", bet.amount, "\n");
+        auto acc_plyer = accounts.find(player);
+        auto acc_invite = accounts.find(invite);
+        print("player_plat:", player_plat, "\n");
+        print("invite_plat:", invite_plat, "\n");
+
+        action(
+            permission_level{_self, N(active)},
+            N(mtoken),
+            N(transfer),
+            std::make_tuple(
+                _self,
+                player,
+                player_plat,
+                //asset(0.0001, symbol_type(S(4, EOS))),
+                std::string("ggggg")))
+            .send();
+
+        action(
+            permission_level{_self, N(active)},
+            N(mtoken),
+            N(transfer),
+            std::make_tuple(
+                _self,
+                invite,
+                invite_plat,
+                //asset(0.0001, symbol_type(S(4, EOS))),
+                std::string("ggggg")))
+            .send();
     }
+
     // @abi action
     void stake(account_name from, asset staked)
     {
@@ -67,6 +107,7 @@ class dividen : public eosio::contract
         eosio_assert(staked.symbol.name() == eosio::symbol_type(MIXER_SYMBOL).name(), "symbol precision mismatch");
 
         //uint64_t delta = staked.amount;
+
         // eosio::print("delta:", delta, "\n");
         // auto globalvars_itr = globalvars.get(MAIN_ID);
         auto globalvars_itr = globalvars.find(MAIN_ID);
@@ -90,6 +131,18 @@ class dividen : public eosio::contract
                 g.balance += staked;
             });
         }
+
+        action(
+            permission_level{from, N(active)},
+            N(mtoken),
+            N(transfer),
+            std::make_tuple(
+                from,
+                _self,
+                staked,
+                //asset(0.0001, symbol_type(S(4, EOS))),
+                std::string("ggggg")))
+            .send();
     }
 
     // @abi action
@@ -97,6 +150,23 @@ class dividen : public eosio::contract
     {
         require_auth(from);
 
+        eosio::transaction txn{};
+
+        txn.actions.emplace_back(
+            eosio::permission_level(from, N(active)),
+            _self,
+            N(temp),
+            std::make_tuple(
+                from, staked));
+        // txn.delay_sec = 60*60*24; //赎回时间24小时
+        txn.delay_sec = 10; //赎回时间24小时
+        //(sender_id, payer, replace_existed)
+        txn.send(uint128_t(from) << 64 | current_time(), _self, true);
+    }
+
+    void temp(account_name from, asset staked)
+    {
+        require_auth(from);
         eosio_assert(staked.is_valid(), "invalid quantity");
         eosio_assert(staked.amount > 0, "must transfer positive quantity");
 
@@ -104,7 +174,8 @@ class dividen : public eosio::contract
 
         auto globalvars_itr = globalvars.find(MAIN_ID);
 
-        eosio_assert(globalvars_itr->total_staked.amount > staked.amount, "total staked must greater unstaked quantity");
+        eosio_assert(globalvars_itr->total_staked.amount > staked.amount,
+                     "total staked must greater unstaked quantity");
 
         globalvars.modify(globalvars_itr, _self, [&](auto &g) {
             g.total_staked -= staked;
@@ -113,9 +184,31 @@ class dividen : public eosio::contract
 
         auto account = accounts.find(from);
         eosio_assert(account != accounts.end(), "account not exists!");
-        accounts.modify(account, _self, [&](auto &g) {
-            g.balance -= staked;
-        });
+        // accounts.modify(account, _self, [&](auto &g) {
+        //     g.balance -= staked;
+        // });
+
+        if (account->balance.amount == staked.amount)
+        {
+            accounts.erase(account);
+        }
+        else
+        {
+            accounts.modify(account, _self, [&](auto &g) {
+                g.balance -= staked;
+            });
+        }
+
+        action(
+            permission_level{_self, N(active)},
+            N(mtoken),
+            N(transfer),
+            std::make_tuple(
+                _self,
+                from,
+                staked,
+                std::string("ggggg")))
+            .send();
     }
 
     // @abi action
@@ -123,11 +216,47 @@ class dividen : public eosio::contract
     {
         require_auth(from);
 
-        auto globalvars_itr = globalvars.begin();
-        eosio_assert(globalvars_itr != globalvars.end(), "Contract is not init");
-
         auto account = accounts.find(from);
         eosio_assert(account != accounts.end(), "account not exists!");
+
+        auto globalvars_itr = globalvars.find(MAIN_ID);
+
+        eosio::print("total_staked:", globalvars_itr->total_staked.amount, "\n");
+
+        //asset temp = account->balance.amount/globalvars_itr->total_staked.amount ;
+        auto temp = account->balance / globalvars_itr->total_staked;
+
+        uint64_t b = account->balance.amount;
+
+        uint64_t t = globalvars_itr->total_staked.amount;
+
+        uint64_t g1 = globalvars_itr->eos_pool.amount;
+
+        eosio::print("total_staked:", globalvars_itr->total_staked.amount, "\n");
+
+        // uint64_t tempamount=double_mult(g, b);
+        uint64_t tempamount = g1 * b;
+
+        //double amount = 10000 *g*b/t;
+        eosio::print("tempamount:", tempamount, "\n");
+
+        // uint64_t amount=double_div(tempamount,t);
+        uint64_t amount = tempamount / t;
+
+        eosio::print("amount-1000:", amount, "\n");
+
+        if (amount == 0)
+        {
+            return;
+        }
+
+        asset t_eos = asset(amount, symbol_type(S(4, EOS)));
+        print("t_eos", t_eos.amount, "\n");
+        print("g_pool", g1, "\n");
+        globalvars.modify(globalvars_itr, _self, [&](auto &g) {
+            g.eos_pool -= t_eos;
+            //g.earnings_per_share = g.eos_pool / (g.total_staked - delta);
+        });
 
         action(
             permission_level{_self, N(active)},
@@ -135,23 +264,68 @@ class dividen : public eosio::contract
             N(transfer),
             std::make_tuple(
                 _self,
-                N(mangocasino1),
-                asset(0, symbol_type(S(4, EOS))),
-                //asset(0.0001, symbol_type(S(4, EOS))),
+                from,
+                t_eos,
                 std::string("ggggg")))
             .send();
+    }
+
+    inline void profit(asset quantity)
+    {
+        auto globalvars_itr = globalvars.find(MAIN_ID);
+
+        if (globalvars_itr == globalvars.end())
+        {
+            initcontract();
+        }
+        else
+        {
+            globalvars.modify(globalvars_itr, _self, [&](auto &g) {
+                g.eos_pool += quantity;
+                //g.earnings_per_share = g.eos_pool / (g.total_staked - delta);
+            });
+        }
     }
 
     //监听
     void transfer(uint64_t sender, uint64_t receiver)
     {
         auto transfer_data = unpack_action_data<st_transfer>();
-        if (transfer_data.from == _self || transfer_data.from == N(mangocasino1))
+
+        if (transfer_data.from == _self)
         {
             return;
         }
         //
-        eosio_assert(transfer_data.quantity.is_valid(), "Invalid asset");
+        std::string mem_str = transfer_data.memo;
+        asset quantity = transfer_data.quantity;
+
+        eosio_assert(quantity.is_valid(), "Invalid asset");
+
+        eosio_assert(quantity.amount > 0, "must transfer positive quantity");
+
+        if (quantity.symbol.name() != eosio::symbol_type(EOS_SYMBOL).name())
+        {
+            return;
+        }
+        eosio_assert(quantity.symbol.name() == eosio::symbol_type(EOS_SYMBOL).name(), "EOS symbol precision mismatch");
+        eosio_assert(mem_str.size() <= 256, "memo has more than 256 bytes");
+
+        eosio::print("mem_str:", mem_str, "n");
+
+        //auto params = split(mem_str, ' ');
+        //eosio_assert(params.size() >= 1, "error memo");
+
+        if (mem_str == "make_profit")
+        {
+            //eosio_assert(quantity.contract == N(eosio.token), "must use true EOS to make profit");
+            eosio_assert(quantity.symbol == EOS_SYMBOL, "must use EOS to make profit");
+            // make_profit(quantity.quantity.amount);
+
+            profit(quantity);
+
+            return;
+        }
     }
 
     // @abi action
@@ -233,4 +407,4 @@ class dividen : public eosio::contract
     }
 
 EOSIO_ABI_EX(dividen,
-             (initcontract)(reset)(stake)(unstake)(claim)(transfer))
+             (initcontract)(reset)(dobet)(stake)(unstake)(claim)(transfer)(temp))

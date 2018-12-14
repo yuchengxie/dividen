@@ -10,11 +10,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7d2722bb-c0b6-4ca5-bdd2-df1a29a7aeb0" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dividen.abi" beforeDir="false" afterPath="$PROJECT_DIR$/dividen.abi" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dividen.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/dividen.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dividen.wasm" beforeDir="false" afterPath="$PROJECT_DIR$/dividen.wasm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dividen.wast" beforeDir="false" afterPath="$PROJECT_DIR$/dividen.wast" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -26,11 +26,12 @@
     <session id="-649760621">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="4" />
+          <entry key="project.closed" value="6" />
           <entry key="project.open.time.0" value="3" />
+          <entry key="project.open.time.10" value="1" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.3" value="1" />
-          <entry key="project.opened" value="5" />
+          <entry key="project.opened" value="6" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -63,8 +64,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/dividen.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="224">
-              <caret line="59" column="47" selection-start-line="59" selection-start-column="47" selection-end-line="59" selection-end-column="47" />
+            <state relative-caret-position="367">
+              <caret line="68" column="48" lean-forward="true" selection-start-line="68" selection-start-column="48" selection-end-line="68" selection-end-column="48" />
             </state>
           </provider>
         </entry>
@@ -98,8 +99,7 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="142" />
+  <component name="ProjectFrameBounds">
     <option name="y" value="23" />
     <option name="width" value="1440" />
     <option name="height" value="877" />
@@ -451,7 +451,6 @@
       <foldersAlwaysOnTop value="false" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -464,6 +463,7 @@
         </subPane>
         <option name="show-excluded-files" value="false" />
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -586,18 +586,19 @@
       <workItem from="1544516978397" duration="16000" />
       <workItem from="1544516998349" duration="2000" />
       <workItem from="1544517008467" duration="570000" />
-      <workItem from="1544599137067" duration="392000" />
+      <workItem from="1544599137067" duration="546000" />
+      <workItem from="1544688956728" duration="31000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1012000" />
+    <option name="totallyTimeSpent" value="1197000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="877" extended-state="6" />
+    <frame x="0" y="23" width="1440" height="877" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" order="0" sideWeight="0.4899329" visible="true" weight="0.1462536" />
+      <window_info id="Project" order="0" sideWeight="0.4899329" visible="true" weight="0.14841498" />
       <window_info id="Structure" order="1" sideWeight="0.5100671" side_tool="true" weight="0.012247839" />
       <window_info id="Favorites" order="2" sideWeight="0.5100671" side_tool="true" weight="0.012247839" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -626,8 +627,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/dividen.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="224">
-          <caret line="59" column="47" selection-start-line="59" selection-start-column="47" selection-end-line="59" selection-end-column="47" />
+        <state relative-caret-position="367">
+          <caret line="68" column="48" lean-forward="true" selection-start-line="68" selection-start-column="48" selection-end-line="68" selection-end-column="48" />
         </state>
       </provider>
     </entry>
