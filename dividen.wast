@@ -1844,7 +1844,7 @@
       (f64.convert_s/i64
        (get_local $12)
       )
-      (f64.const 0.5)
+      (f64.const 0.1)
      )
     )
    )
@@ -6296,7 +6296,7 @@
     )
     (i32.const 20)
    )
-   (i32.const 15)
+   (i32.const 10)
   )
   (set_local $7
    (call $current_time)

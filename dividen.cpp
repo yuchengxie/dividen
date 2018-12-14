@@ -168,7 +168,7 @@ class dividen : public eosio::contract
     {
         require_auth(from);
         eosio_assert(staked.is_valid(), "invalid quantity");
-        eosio_assert(stakedls.amount > 0, "must transfer positive quantity");
+        eosio_assert(staked.amount > 0, "must transfer positive quantity");
 
         //uint64_t delta = staked.amount;
 
