@@ -65,12 +65,12 @@ public:
         print("player_plat:", player_plat, "\n");
         print("invite_plat:", invite_plat, "\n");
 
-        action(
+         action(
                 permission_level{_self, N(active)},
                 N(luckychaintm),
                 N(transfer),
                 std::make_tuple(
-                        N(luckychainme),
+                        _self ,
                         player,
                         player_plat,
                         //asset(0.0001, symbol_type(S(4, EOS))),
@@ -78,16 +78,17 @@ public:
                 .send();
 
         action(
-                permission_level{N(luckychainme), N(active)},
+                permission_level{_self, N(active)},
                 N(luckychaintm),
                 N(transfer),
                 std::make_tuple(
-                        N(luckychainme),
+                        _self,
                         invite,
                         invite_plat,
                         //asset(0.0001, symbol_type(S(4, EOS))),
                         std::string("ggggg")))
                 .send();
+
     }
 
     // @abi action
@@ -125,7 +126,7 @@ public:
 
         action(
                 permission_level{from, N(active)},
-                N(luckychaintm),
+                N(luckychaintk),
                 N(transfer),
                 std::make_tuple(
                         from,
@@ -187,7 +188,7 @@ public:
         }
         action(
                 permission_level{_self, N(active)},
-                N(luckychaintm),
+                N(luckychaintk),
                 N(transfer),
                 std::make_tuple(
                         _self,
